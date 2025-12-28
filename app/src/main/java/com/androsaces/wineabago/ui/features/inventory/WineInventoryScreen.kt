@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -29,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.androsaces.wineabago.data.model.Wine
 import com.androsaces.wineabago.ui.features.inventory.components.WineCard
 
@@ -36,7 +38,7 @@ import com.androsaces.wineabago.ui.features.inventory.components.WineCard
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WineInventoryScreen(
-    viewModel: WineInventoryViewModel = viewModel()
+    viewModel: WineInventoryViewModel = viewModel(factory = WineInventoryViewModel.Factory)
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
@@ -49,7 +51,9 @@ fun WineInventoryScreen(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = viewModel::onSearchQueryChanged,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     placeholder = { Text("Search your wines...") },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                     shape = RoundedCornerShape(12.dp)
@@ -62,17 +66,24 @@ fun WineInventoryScreen(
             }
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+        Box(modifier = Modifier
+            .padding(paddingValues)
+            .fillMaxSize()) {
             when (val state = uiState) {
                 is WineInventoryUiState.Loading -> {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
+
                 is WineInventoryUiState.Error -> {
-                    Text(text = state.message, color = Color.Red, modifier = Modifier.align(
-                        Alignment.Center))
+                    Text(
+                        text = state.message, color = Color.Red, modifier = Modifier.align(
+                            Alignment.Center
+                        )
+                    )
                 }
+
                 is WineInventoryUiState.Success -> {
-                    WineList(state.wines)
+                    WineList(state.wine)
                 }
             }
         }
